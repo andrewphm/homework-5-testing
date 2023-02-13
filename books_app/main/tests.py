@@ -50,7 +50,7 @@ def create_user():
 #################################################
 
 class MainTests(unittest.TestCase):
- 
+
     def setUp(self):
         """Executed prior to each test."""
         app.config['TESTING'] = True
@@ -60,7 +60,7 @@ class MainTests(unittest.TestCase):
         self.app = app.test_client()
         db.drop_all()
         db.create_all()
- 
+
     def test_homepage_logged_out(self):
         """Test that the books show up on the homepage."""
         # Set up
@@ -84,7 +84,7 @@ class MainTests(unittest.TestCase):
         self.assertNotIn('Create Book', response_text)
         self.assertNotIn('Create Author', response_text)
         self.assertNotIn('Create Genre', response_text)
- 
+
     def test_homepage_logged_in(self):
         """Test that the books show up on the homepage."""
         # Set up
@@ -135,15 +135,27 @@ class MainTests(unittest.TestCase):
     def test_book_detail_logged_in(self):
         """Test that the book appears on its detail page."""
         # TODO: Use helper functions to create books, authors, user, & to log in
+        create_books()
+        create_user()
+        login(self.app, 'me1', 'password')
 
         # TODO: Make a GET request to the URL /book/1, check to see that the
         # status code is 200
+        response = self.app.get('/book/1', follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+
 
         # TODO: Check that the response contains the book's title, publish date,
         # and author's name
+        response_text = response.get_data(as_text=True)
+        self.assertIn("To Kill a Mockingbird", response_text)
+        self.assertIn("Harper Lee", response_text)
+        self.assertIn("Date Published", response_text)
+
 
         # TODO: Check that the response contains the 'Favorite' button
-        pass
+        self.assertIn("Favorite This Book", response_text)
+
 
     def test_update_book(self):
         """Test updating a book."""
@@ -161,7 +173,7 @@ class MainTests(unittest.TestCase):
             'genres': []
         }
         self.app.post('/book/1', data=post_data)
-        
+
         # Make sure the book was updated as we'd expect
         book = Book.query.get(1)
         self.assertEqual(book.title, 'Tequila Mockingbird')
@@ -192,7 +204,7 @@ class MainTests(unittest.TestCase):
 
     def test_create_book_logged_out(self):
         """
-        Test that the user is redirected when trying to access the create book 
+        Test that the user is redirected when trying to access the create book
         route if not logged in.
         """
         # Set up
@@ -218,7 +230,7 @@ class MainTests(unittest.TestCase):
     def test_create_genre(self):
         # TODO: Create a user & login (so that the user can access the route)
 
-        # TODO: Make a POST request to the /create_genre route, 
+        # TODO: Make a POST request to the /create_genre route,
 
         # TODO: Verify that the genre was updated in the database
         pass
@@ -242,7 +254,7 @@ class MainTests(unittest.TestCase):
 
         # TODO: Make a POST request to the /unfavorite/1 route
 
-        # TODO: Verify that the book with id 1 was removed from the user's 
+        # TODO: Verify that the book with id 1 was removed from the user's
         # favorites
         pass
 
