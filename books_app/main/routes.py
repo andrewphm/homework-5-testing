@@ -19,8 +19,18 @@ main = Blueprint("main", __name__)
 def homepage():
     all_books = Book.query.all()
     all_users = User.query.all()
+    print(all_books)
     return render_template('home.html',
         all_books=all_books, all_users=all_users)
+
+
+# Login route
+
+
+
+# Signup Route
+
+# / route will redirect you to current user's profile page
 
 
 @main.route('/create_book', methods=['GET', 'POST'])
@@ -29,7 +39,7 @@ def create_book():
     form = BookForm()
 
     # if form was submitted and contained no errors
-    if form.validate_on_submit(): 
+    if form.validate_on_submit():
         new_book = Book(
             title=form.title.data,
             publish_date=form.publish_date.data,
@@ -59,7 +69,7 @@ def create_author():
 
         flash('New author created successfully.')
         return redirect(url_for('main.homepage'))
-    
+
     # if form was not valid, or was not submitted yet
     return render_template('create_author.html', form=form)
 
@@ -77,7 +87,7 @@ def create_genre():
 
         flash('New genre created successfully.')
         return redirect(url_for('main.homepage'))
-    
+
     # if form was not valid, or was not submitted yet
     return render_template('create_genre.html', form=form)
 
@@ -86,7 +96,7 @@ def create_genre():
 def book_detail(book_id):
     book = Book.query.get(book_id)
     form = BookForm(obj=book)
-    
+
     # if form was submitted and contained no errors
     if form.validate_on_submit():
         book.title = form.title.data

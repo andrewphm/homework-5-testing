@@ -4,7 +4,7 @@ import app
 
 from datetime import date
 from books_app.extensions import app, db, bcrypt
-from books_app.models import Book, Author, User, Audience
+from books_app.models import Book, Author, User, Audience, Genre
 
 """
 Run these tests with the command:
@@ -144,14 +144,12 @@ class MainTests(unittest.TestCase):
         response = self.app.get('/book/1', follow_redirects=True)
         self.assertEqual(response.status_code, 200)
 
-
         # TODO: Check that the response contains the book's title, publish date,
         # and author's name
         response_text = response.get_data(as_text=True)
         self.assertIn("To Kill a Mockingbird", response_text)
         self.assertIn("Harper Lee", response_text)
         self.assertIn("Date Published", response_text)
-
 
         # TODO: Check that the response contains the 'Favorite' button
         self.assertIn("Favorite This Book", response_text)
@@ -221,40 +219,69 @@ class MainTests(unittest.TestCase):
     def test_create_author(self):
         """Test creating an author."""
         # TODO: Create a user & login (so that the user can access the route)
+        create_user()
+        login(self.app, 'me1', 'password')
+
 
         # TODO: Make a POST request to the /create_author route
+        post_data = {
+            'name': 'J.K. Rowling',
+            'biography': 'J.K. Rowling is a British author best known for her Harry Potter series.'
+        }
+        self.app.post('/create_author', data=post_data)
 
         # TODO: Verify that the author was updated in the database
-        pass
+        created_author = Author.query.filter_by(name='J.K. Rowling').one()
+        self.assertIsNotNone(created_author)
+
 
     def test_create_genre(self):
         # TODO: Create a user & login (so that the user can access the route)
-
+        create_user()
+        login(self.app, 'me1', 'password')
         # TODO: Make a POST request to the /create_genre route,
-
+        # with the genre name 'Fantasy'
+        post_data = {
+            'name': 'Fantasy'
+        }
+        self.app.post('/create_genre', data=post_data)
         # TODO: Verify that the genre was updated in the database
-        pass
+        created_genre = Genre.query.filter_by(name='Fantasy').one()
 
     def test_profile_page(self):
         # TODO: Make a GET request to the /profile/me1 route
-
+        response = self.app.get('/profile/me1', follow_redirects=True)
         # TODO: Verify that the response shows the appropriate user info
-        pass
+        self.assertIn("me1", response.get_data(as_text=True))
+        self.assertIn("me1's favorite books are:'", response.get_data(as_text=True))
 
     def test_favorite_book(self):
         # TODO: Login as the user me1
+        create_books()
+        create_user()
+        login(self.app, 'me1', 'password')
 
         # TODO: Make a POST request to the /favorite/1 route
+        self.app.post('/favorite/1')
+        book_1 = Book.query.get(1)
+        user = User.query.filter_by(username='me1').one()
+        self.assertIn(book_1, user.favorite_books)
 
         # TODO: Verify that the book with id 1 was added to the user's favorites
-        pass
+
 
     def test_unfavorite_book(self):
         # TODO: Login as the user me1, and add book with id 1 to me1's favorites
-
+        create_books()
+        create_user()
+        login(self.app, 'me1', 'password')
+        self.app.post('/favorite/1')
         # TODO: Make a POST request to the /unfavorite/1 route
+        self.app.post('/unfavorite/1')
 
         # TODO: Verify that the book with id 1 was removed from the user's
         # favorites
-        pass
+        book_1 = Book.query.get(1)
+        user = User.query.filter_by(username='me1').one()
+        self.assertNotIn(book_1, user.favorite_books)
 
